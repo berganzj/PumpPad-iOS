@@ -11,6 +11,17 @@
 		A10000003ACC001100000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000004ACC001100000004 /* ContentView.swift */; };
 		A10000005ACC001100000005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000006ACC001100000006 /* Assets.xcassets */; };
 		A10000007ACC001100000007 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000008ACC001100000008 /* Preview Assets.xcassets */; };
+		A10000030ACC001100000030 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000031ACC001100000031 /* Models.swift */; };
+		A10000032ACC001100000032 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000033ACC001100000033 /* MainTabView.swift */; };
+		A10000034ACC001100000034 /* PresetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000035ACC001100000035 /* PresetsView.swift */; };
+		A10000036ACC001100000036 /* WorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000037ACC001100000037 /* WorkoutView.swift */; };
+		A10000038ACC001100000038 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000039ACC001100000039 /* HistoryView.swift */; };
+		A10000040ACC001100000040 /* AddPresetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000041ACC001100000041 /* AddPresetView.swift */; };
+		A10000042ACC001100000042 /* EditExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000043ACC001100000043 /* EditExerciseView.swift */; };
+		A10000044ACC001100000044 /* PresetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000045ACC001100000045 /* PresetDetailView.swift */; };
+		A10000046ACC001100000046 /* EditPresetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000047ACC001100000047 /* EditPresetView.swift */; };
+		A10000048ACC001100000048 /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000049ACC001100000049 /* ActiveWorkoutView.swift */; };
+		A10000050ACC001100000050 /* CompletedWorkoutDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000051ACC001100000051 /* CompletedWorkoutDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +31,17 @@
 		A10000006ACC001100000006 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A10000008ACC001100000008 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		A10000010ACC001100000010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A10000031ACC001100000031 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A10000033ACC001100000033 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		A10000035ACC001100000035 /* PresetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetsView.swift; sourceTree = "<group>"; };
+		A10000037ACC001100000037 /* WorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutView.swift; sourceTree = "<group>"; };
+		A10000039ACC001100000039 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		A10000041ACC001100000041 /* AddPresetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPresetView.swift; sourceTree = "<group>"; };
+		A10000043ACC001100000043 /* EditExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditExerciseView.swift; sourceTree = "<group>"; };
+		A10000045ACC001100000045 /* PresetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetDetailView.swift; sourceTree = "<group>"; };
+		A10000047ACC001100000047 /* EditPresetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPresetView.swift; sourceTree = "<group>"; };
+		A10000049ACC001100000049 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
+		A10000051ACC001100000051 /* CompletedWorkoutDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletedWorkoutDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,7 +67,10 @@
 			isa = PBXGroup;
 			children = (
 				A10000002ACC001100000002 /* PumpPadApp.swift */,
+				A10000033ACC001100000033 /* MainTabView.swift */,
 				A10000004ACC001100000004 /* ContentView.swift */,
+				A10000031ACC001100000031 /* Models.swift */,
+				A10000060ACC001100000060 /* Views */,
 				A10000006ACC001100000006 /* Assets.xcassets */,
 				A10000010ACC001100000010 /* Info.plist */,
 				A10000015ACC001100000015 /* Preview Content */,
@@ -67,6 +92,22 @@
 				A10000008ACC001100000008 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		A10000060ACC001100000060 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A10000035ACC001100000035 /* PresetsView.swift */,
+				A10000041ACC001100000041 /* AddPresetView.swift */,
+				A10000045ACC001100000045 /* PresetDetailView.swift */,
+				A10000047ACC001100000047 /* EditPresetView.swift */,
+				A10000043ACC001100000043 /* EditExerciseView.swift */,
+				A10000037ACC001100000037 /* WorkoutView.swift */,
+				A10000049ACC001100000049 /* ActiveWorkoutView.swift */,
+				A10000039ACC001100000039 /* HistoryView.swift */,
+				A10000051ACC001100000051 /* CompletedWorkoutDetailView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -141,6 +182,17 @@
 			files = (
 				A10000003ACC001100000003 /* ContentView.swift in Sources */,
 				A10000001ACC001100000001 /* PumpPadApp.swift in Sources */,
+				A10000030ACC001100000030 /* Models.swift in Sources */,
+				A10000032ACC001100000032 /* MainTabView.swift in Sources */,
+				A10000034ACC001100000034 /* PresetsView.swift in Sources */,
+				A10000036ACC001100000036 /* WorkoutView.swift in Sources */,
+				A10000038ACC001100000038 /* HistoryView.swift in Sources */,
+				A10000040ACC001100000040 /* AddPresetView.swift in Sources */,
+				A10000042ACC001100000042 /* EditExerciseView.swift in Sources */,
+				A10000044ACC001100000044 /* PresetDetailView.swift in Sources */,
+				A10000046ACC001100000046 /* EditPresetView.swift in Sources */,
+				A10000048ACC001100000048 /* ActiveWorkoutView.swift in Sources */,
+				A10000050ACC001100000050 /* CompletedWorkoutDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
