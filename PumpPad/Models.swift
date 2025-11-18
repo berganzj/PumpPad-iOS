@@ -73,6 +73,44 @@ class WorkoutDataManager: ObservableObject {
     
     init() {
         loadData()
+        // Add sample data for previews if no data exists
+        if presets.isEmpty && completedWorkouts.isEmpty {
+            addSampleData()
+        }
+    }
+    
+    private func addSampleData() {
+        // Add sample preset for preview
+        let samplePreset = WorkoutPreset(
+            name: "Push Day",
+            exercises: [
+                Exercise(name: "Bench Press", sets: [
+                    WorkoutSet(targetReps: "8-10", weight: 135),
+                    WorkoutSet(targetReps: "8-10", weight: 135),
+                    WorkoutSet(targetReps: "6-8", weight: 145)
+                ]),
+                Exercise(name: "Overhead Press", sets: [
+                    WorkoutSet(targetReps: "10-12", weight: 95),
+                    WorkoutSet(targetReps: "10-12", weight: 95)
+                ])
+            ],
+            notes: "Focus on form and controlled movement"
+        )
+        presets.append(samplePreset)
+        
+        // Add sample completed workout
+        let completedWorkout = CompletedWorkout(
+            from: samplePreset,
+            exercises: [
+                Exercise(name: "Bench Press", sets: [
+                    WorkoutSet(targetReps: "8-10", actualReps: 10, weight: 135),
+                    WorkoutSet(targetReps: "8-10", actualReps: 8, weight: 135),
+                    WorkoutSet(targetReps: "6-8", actualReps: 6, weight: 145)
+                ])
+            ],
+            duration: 2400 // 40 minutes
+        )
+        completedWorkouts.append(completedWorkout)
     }
     
     // MARK: - Preset Management
