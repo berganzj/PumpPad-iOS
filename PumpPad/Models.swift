@@ -28,7 +28,7 @@ struct Exercise: Identifiable, Codable {
 
 // MARK: - Workout Preset Model
 struct WorkoutPreset: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     var name: String
     var exercises: [Exercise]
     var notes: String
