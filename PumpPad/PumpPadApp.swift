@@ -2,7 +2,7 @@ import SwiftUI
 
 @main
 struct PumpPadApp: App {
-    @StateObject private var dataManager = WorkoutDataManager()
+    let dataManager = WorkoutDataManager()
     
     var body: some Scene {
         WindowGroup {

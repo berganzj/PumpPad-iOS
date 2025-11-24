@@ -22,6 +22,8 @@
 		A10000046ACC001100000046 /* EditPresetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000047ACC001100000047 /* EditPresetView.swift */; };
 		A10000048ACC001100000048 /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000049ACC001100000049 /* ActiveWorkoutView.swift */; };
 		A10000050ACC001100000050 /* CompletedWorkoutDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000051ACC001100000051 /* CompletedWorkoutDetailView.swift */; };
+		A10000052ACC001100000052 /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000053ACC001100000053 /* CoreDataManager.swift */; };
+		A10000054ACC001100000054 /* PumpPadDataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A10000055ACC001100000055 /* PumpPadDataModel.xcdatamodeld */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +44,8 @@
 		A10000047ACC001100000047 /* EditPresetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPresetView.swift; sourceTree = "<group>"; };
 		A10000049ACC001100000049 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
 		A10000051ACC001100000051 /* CompletedWorkoutDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletedWorkoutDetailView.swift; sourceTree = "<group>"; };
+		A10000053ACC001100000053 /* CoreDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
+		A10000055ACC001100000055 /* PumpPadDataModel.xcdatamodeld */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = PumpPadDataModel.xcdatamodeld; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +74,8 @@
 				A10000033ACC001100000033 /* MainTabView.swift */,
 				A10000004ACC001100000004 /* ContentView.swift */,
 				A10000031ACC001100000031 /* Models.swift */,
+				A10000053ACC001100000053 /* CoreDataManager.swift */,
+				A10000055ACC001100000055 /* PumpPadDataModel.xcdatamodeld */,
 				A10000060ACC001100000060 /* Views */,
 				A10000006ACC001100000006 /* Assets.xcassets */,
 				A10000010ACC001100000010 /* Info.plist */,
@@ -193,6 +199,8 @@
 				A10000046ACC001100000046 /* EditPresetView.swift in Sources */,
 				A10000048ACC001100000048 /* ActiveWorkoutView.swift in Sources */,
 				A10000050ACC001100000050 /* CompletedWorkoutDetailView.swift in Sources */,
+				A10000052ACC001100000052 /* CoreDataManager.swift in Sources */,
+				A10000054ACC001100000054 /* PumpPadDataModel.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
