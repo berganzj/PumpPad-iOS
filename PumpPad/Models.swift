@@ -48,7 +48,7 @@ struct WorkoutPreset: Identifiable, Codable {
 
 // MARK: - Completed Workout Model
 struct CompletedWorkout: Identifiable, Codable {
-    let id = UUID()
+    let id: UUID
     let presetId: UUID
     let presetName: String
     let exercises: [Exercise] // Contains actual performed data
@@ -57,11 +57,22 @@ struct CompletedWorkout: Identifiable, Codable {
     let duration: TimeInterval? // Optional workout duration
     
     init(from preset: WorkoutPreset, exercises: [Exercise], duration: TimeInterval? = nil) {
+        self.id = UUID()
         self.presetId = preset.id
         self.presetName = preset.name
         self.exercises = exercises
         self.notes = preset.notes
         self.dateCompleted = Date()
+        self.duration = duration
+    }
+    
+    init(id: UUID, presetId: UUID, presetName: String, exercises: [Exercise], notes: String, dateCompleted: Date, duration: TimeInterval?) {
+        self.id = id
+        self.presetId = presetId
+        self.presetName = presetName
+        self.exercises = exercises
+        self.notes = notes
+        self.dateCompleted = dateCompleted
         self.duration = duration
     }
 }
