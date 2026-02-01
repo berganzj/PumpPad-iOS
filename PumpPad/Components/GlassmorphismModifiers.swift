@@ -59,48 +59,57 @@ struct GlassCard: ViewModifier {
 struct GlassButton: ViewModifier {
     var isEnabled: Bool = true
     
+    private var gradientColors: [Color] {
+        isEnabled ? [
+            Color.blue.opacity(0.5),
+            Color.purple.opacity(0.4),
+            Color.pink.opacity(0.2)
+        ] : [
+            Color.gray.opacity(0.25),
+            Color.gray.opacity(0.15)
+        ]
+    }
+    
+    @ViewBuilder
+    private var backgroundShape: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .fill(isEnabled ? .ultraThinMaterial : Color.gray.opacity(0.3))
+            .overlay {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(
+                        LinearGradient(
+                            colors: gradientColors,
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+            .overlay {
+                if isEnabled {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.5),
+                                    Color.white.opacity(0.2)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                }
+            }
+            .shadow(color: isEnabled ? Color.blue.opacity(0.4) : Color.clear, radius: 12, x: 0, y: 6)
+            .shadow(color: isEnabled ? Color.purple.opacity(0.2) : Color.clear, radius: 8, x: 0, y: 3)
+    }
+    
     func body(content: Content) -> some View {
         content
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
             .background {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isEnabled ? .ultraThinMaterial : Color.gray.opacity(0.3))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(
-                                LinearGradient(
-                                    colors: isEnabled ? [
-                                        Color.blue.opacity(0.5),
-                                        Color.purple.opacity(0.4),
-                                        Color.pink.opacity(0.2)
-                                    ] : [
-                                        Color.gray.opacity(0.25),
-                                        Color.gray.opacity(0.15)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    }
-                    .overlay {
-                        if isEnabled {
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [
-                                            Color.white.opacity(0.5),
-                                            Color.white.opacity(0.2)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 1
-                                )
-                        }
-                    }
-                    .shadow(color: isEnabled ? Color.blue.opacity(0.4) : Color.clear, radius: 12, x: 0, y: 6)
-                    .shadow(color: isEnabled ? Color.purple.opacity(0.2) : Color.clear, radius: 8, x: 0, y: 3)
+                backgroundShape
             }
     }
 }

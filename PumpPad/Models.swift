@@ -92,12 +92,8 @@ class WorkoutDataManager: ObservableObject {
     
     init() {
         // Try to initialize Core Data, but fall back to UserDefaults if it fails
-        do {
-            coreDataManager = CoreDataManager.shared
-        } catch {
-            print("Core Data initialization failed, using UserDefaults: \(error)")
-            coreDataManager = nil
-        }
+        // CoreDataManager.shared is not throwing, so we can assign directly
+        coreDataManager = CoreDataManager.shared
         
         loadData()
         // Add sample data for previews if no data exists
@@ -176,7 +172,7 @@ class WorkoutDataManager: ObservableObject {
     // MARK: - Data Persistence (Enhanced with Core Data support)
     private func savePresets() {
         // Try Core Data first, fall back to UserDefaults
-        if let coreDataManager = coreDataManager {
+        if coreDataManager != nil {
             // Save to Core Data
             savePresetsToCoreData()
         } else {
@@ -189,7 +185,7 @@ class WorkoutDataManager: ObservableObject {
     
     private func saveCompletedWorkouts() {
         // Try Core Data first, fall back to UserDefaults
-        if let coreDataManager = coreDataManager {
+        if coreDataManager != nil {
             // Save to Core Data
             saveCompletedWorkoutsToCoreData()
         } else {
@@ -202,7 +198,7 @@ class WorkoutDataManager: ObservableObject {
     
     private func loadData() {
         // Try Core Data first, fall back to UserDefaults
-        if let coreDataManager = coreDataManager {
+        if coreDataManager != nil {
             // Check for migration from UserDefaults
             if !UserDefaults.standard.bool(forKey: migrationKey) {
                 migrateFromUserDefaults()
@@ -229,7 +225,7 @@ class WorkoutDataManager: ObservableObject {
     
     // MARK: - Core Data Methods (when available)
     private func migrateFromUserDefaults() {
-        guard let coreDataManager = coreDataManager else { return }
+        guard coreDataManager != nil else { return }
         
         // Migrate existing UserDefaults data to Core Data
         loadDataFromUserDefaults()
