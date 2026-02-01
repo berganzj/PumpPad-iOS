@@ -17,105 +17,131 @@ struct ActiveWorkoutView: View {
         self._startTime = State(initialValue: Date())
     }
     
+    private var gradientBackground: some View {
+        LinearGradient(
+            colors: [
+                Color.blue.opacity(0.1),
+                Color.purple.opacity(0.1),
+                Color.pink.opacity(0.05)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+    }
+    
+    private var headerSection: some View {
+        GlassContainer(cornerRadius: 20, padding: 20) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(preset.name)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                
+                Text("Started: \(startTime, formatter: timeFormatter)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                if !preset.notes.isEmpty {
+                    Text("Preset Notes: \(preset.notes)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+    
+    private var notesSection: some View {
+        GlassContainer(cornerRadius: 20, padding: 20) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Workout Notes")
+                    .font(.headline)
+                
+                TextField("Add notes about this workout session...", text: $workoutNotes, axis: .vertical)
+                    .lineLimit(3...6)
+                    .glassTextField()
+                    .onChange(of: workoutNotes) { _, _ in
+                        saveProgress()
+                    }
+            }
+        }
+    }
+    
+    private var exercisesList: some View {
+        ForEach(workoutExercises.indices, id: \.self) { exerciseIndex in
+            exerciseView(at: exerciseIndex)
+        }
+    }
+    
+    @ViewBuilder
+    private func exerciseView(at index: Int) -> some View {
+        GlassContainer(cornerRadius: 16, padding: 16) {
+            VStack(alignment: .leading, spacing: 12) {
+                exerciseHeader(at: index)
+                
+                if !workoutExercises[index].isSkipped {
+                    exerciseSets(at: index)
+                } else {
+                    Text("Exercise skipped - machine unavailable")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .italic()
+                }
+            }
+        }
+    }
+    
+    private func exerciseHeader(at index: Int) -> some View {
+        HStack {
+            Text("\(index + 1). \(workoutExercises[index].name)")
+                .font(.headline)
+                .foregroundColor(workoutExercises[index].isSkipped ? .secondary : .primary)
+            
+            Spacer()
+            
+            if workoutExercises[index].isSkipped {
+                Text("SKIPPED")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(.orange)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.orange.opacity(0.2))
+                    .cornerRadius(6)
+            }
+            
+            Button(action: {
+                toggleSkipExercise(at: index)
+            }) {
+                Image(systemName: workoutExercises[index].isSkipped ? "arrow.uturn.backward" : "xmark.circle")
+                    .foregroundColor(workoutExercises[index].isSkipped ? .blue : .orange)
+            }
+        }
+    }
+    
+    private func exerciseSets(at index: Int) -> some View {
+        ForEach(workoutExercises[index].sets.indices, id: \.self) { setIndex in
+            ActiveSetRowView(
+                set: $workoutExercises[index].sets[setIndex],
+                setNumber: setIndex + 1
+            )
+            .onChange(of: workoutExercises[index].sets[setIndex].actualReps) { _, _ in
+                saveProgress()
+            }
+            .onChange(of: workoutExercises[index].sets[setIndex].weight) { _, _ in
+                saveProgress()
+            }
+        }
+    }
+    
     var body: some View {
         ZStack {
-            // Gradient background
-            LinearGradient(
-                colors: [
-                    Color.blue.opacity(0.1),
-                    Color.purple.opacity(0.1),
-                    Color.pink.opacity(0.05)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            gradientBackground
             
             ScrollView {
                 VStack(spacing: 20) {
-                    GlassContainer(cornerRadius: 20, padding: 20) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(preset.name)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            
-                            Text("Started: \(startTime, formatter: timeFormatter)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            
-                            if !preset.notes.isEmpty {
-                                Text("Preset Notes: \(preset.notes)")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                    
-                    GlassContainer(cornerRadius: 20, padding: 20) {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Workout Notes")
-                                .font(.headline)
-                            
-                            TextField("Add notes about this workout session...", text: $workoutNotes, axis: .vertical)
-                                .lineLimit(3...6)
-                                .glassTextField()
-                                .onChange(of: workoutNotes) { _, _ in
-                                    saveProgress()
-                                }
-                        }
-                    }
-            
-                    ForEach(workoutExercises.indices, id: \.self) { exerciseIndex in
-                        GlassContainer(cornerRadius: 16, padding: 16) {
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    Text("\(exerciseIndex + 1). \(workoutExercises[exerciseIndex].name)")
-                                        .font(.headline)
-                                        .foregroundColor(workoutExercises[exerciseIndex].isSkipped ? .secondary : .primary)
-                                    
-                                    Spacer()
-                                    
-                                    if workoutExercises[exerciseIndex].isSkipped {
-                                        Text("SKIPPED")
-                                            .font(.caption)
-                                            .fontWeight(.bold)
-                                            .foregroundColor(.orange)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 4)
-                                            .background(Color.orange.opacity(0.2))
-                                            .cornerRadius(6)
-                                    }
-                                    
-                                    Button(action: {
-                                        toggleSkipExercise(at: exerciseIndex)
-                                    }) {
-                                        Image(systemName: workoutExercises[exerciseIndex].isSkipped ? "arrow.uturn.backward" : "xmark.circle")
-                                            .foregroundColor(workoutExercises[exerciseIndex].isSkipped ? .blue : .orange)
-                                    }
-                                }
-                                
-                                if !workoutExercises[exerciseIndex].isSkipped {
-                                    ForEach(workoutExercises[exerciseIndex].sets.indices, id: \.self) { setIndex in
-                                        ActiveSetRowView(
-                                            set: $workoutExercises[exerciseIndex].sets[setIndex],
-                                            setNumber: setIndex + 1
-                                        )
-                                        .onChange(of: workoutExercises[exerciseIndex].sets[setIndex].actualReps) { _, _ in
-                                            saveProgress()
-                                        }
-                                        .onChange(of: workoutExercises[exerciseIndex].sets[setIndex].weight) { _, _ in
-                                            saveProgress()
-                                        }
-                                    }
-                                } else {
-                                    Text("Exercise skipped - machine unavailable")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                        .italic()
-                                }
-                            }
-                        }
-                    }
+                    headerSection
+                    notesSection
+                    exercisesList
                 }
                 .padding()
             }
