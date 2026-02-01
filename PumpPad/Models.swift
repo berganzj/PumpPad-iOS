@@ -2,7 +2,7 @@ import Foundation
 import CoreData
 
 // MARK: - Set Model
-struct WorkoutSet: Identifiable, Codable {
+struct WorkoutSet: Identifiable, Codable, Equatable {
     let id: UUID
     var targetReps: String // Support for ranges like "10-15" or single numbers
     var actualReps: Int?
@@ -17,7 +17,7 @@ struct WorkoutSet: Identifiable, Codable {
 }
 
 // MARK: - Exercise Model
-struct Exercise: Identifiable, Codable {
+struct Exercise: Identifiable, Codable, Equatable {
     let id: UUID
     var name: String
     var sets: [WorkoutSet]
@@ -466,4 +466,5 @@ class WorkoutDataManager: ObservableObject {
             loadInProgressWorkout()
         }
     }
+}
 }
