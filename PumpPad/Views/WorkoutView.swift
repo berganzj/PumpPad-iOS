@@ -8,6 +8,8 @@ struct WorkoutView: View {
             Group {
                 if let currentWorkout = dataManager.currentWorkout {
                     ActiveWorkoutView(preset: currentWorkout)
+                } else if let resumedWorkout = dataManager.resumeInProgressWorkout() {
+                    ActiveWorkoutView(preset: resumedWorkout)
                 } else {
                     WorkoutSelectionView()
                 }

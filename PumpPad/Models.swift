@@ -21,11 +21,13 @@ struct Exercise: Identifiable, Codable {
     let id: UUID
     var name: String
     var sets: [WorkoutSet]
+    var isSkipped: Bool // Track if exercise was skipped
     
-    init(id: UUID = UUID(), name: String, sets: [WorkoutSet] = []) {
+    init(id: UUID = UUID(), name: String, sets: [WorkoutSet] = [], isSkipped: Bool = false) {
         self.id = id
         self.name = name
         self.sets = sets
+        self.isSkipped = isSkipped
     }
 }
 
@@ -56,12 +58,12 @@ struct CompletedWorkout: Identifiable, Codable {
     let dateCompleted: Date
     let duration: TimeInterval? // Optional workout duration
     
-    init(from preset: WorkoutPreset, exercises: [Exercise], duration: TimeInterval? = nil) {
+    init(from preset: WorkoutPreset, exercises: [Exercise], notes: String = "", duration: TimeInterval? = nil) {
         self.id = UUID()
         self.presetId = preset.id
         self.presetName = preset.name
         self.exercises = exercises
-        self.notes = preset.notes
+        self.notes = notes.isEmpty ? preset.notes : notes // Use workout notes if provided, otherwise fall back to preset notes
         self.dateCompleted = Date()
         self.duration = duration
     }
@@ -77,14 +79,33 @@ struct CompletedWorkout: Identifiable, Codable {
     }
 }
 
+// MARK: - In Progress Workout Model
+struct InProgressWorkout: Codable {
+    let presetId: UUID
+    let presetName: String
+    var exercises: [Exercise]
+    var notes: String
+    let startTime: Date
+    
+    init(from preset: WorkoutPreset) {
+        self.presetId = preset.id
+        self.presetName = preset.name
+        self.exercises = preset.exercises
+        self.notes = ""
+        self.startTime = Date()
+    }
+}
+
 // MARK: - Data Manager
 class WorkoutDataManager: ObservableObject {
     @Published var presets: [WorkoutPreset] = []
     @Published var completedWorkouts: [CompletedWorkout] = []
     @Published var currentWorkout: WorkoutPreset?
+    @Published var inProgressWorkout: InProgressWorkout?
     
     private let presetsKey = "workout_presets"
     private let completedWorkoutsKey = "completed_workouts"
+    private let inProgressWorkoutKey = "in_progress_workout"
     private let migrationKey = "has_migrated_to_coredata_v2"
     
     // Core Data manager (optional - falls back to UserDefaults if Core Data fails)
@@ -96,6 +117,7 @@ class WorkoutDataManager: ObservableObject {
         coreDataManager = CoreDataManager.shared
         
         loadData()
+        loadInProgressWorkout()
         // Add sample data for previews if no data exists
         if presets.isEmpty && completedWorkouts.isEmpty {
             addSampleData()
@@ -157,16 +179,39 @@ class WorkoutDataManager: ObservableObject {
     // MARK: - Workout Management
     func startWorkout(preset: WorkoutPreset) {
         currentWorkout = preset
+        inProgressWorkout = InProgressWorkout(from: preset)
+        saveInProgressWorkout()
+    }
+    
+    func updateInProgressWorkout(exercises: [Exercise], notes: String) {
+        guard var workout = inProgressWorkout else { return }
+        workout.exercises = exercises
+        workout.notes = notes
+        inProgressWorkout = workout
+        saveInProgressWorkout()
     }
     
     func completeWorkout(_ completedWorkout: CompletedWorkout) {
         completedWorkouts.append(completedWorkout)
         currentWorkout = nil
+        inProgressWorkout = nil
+        clearInProgressWorkout()
         saveCompletedWorkouts()
     }
     
     func cancelCurrentWorkout() {
         currentWorkout = nil
+        inProgressWorkout = nil
+        clearInProgressWorkout()
+    }
+    
+    func resumeInProgressWorkout() -> WorkoutPreset? {
+        guard let inProgress = inProgressWorkout,
+              let preset = presets.first(where: { $0.id == inProgress.presetId }) else {
+            return nil
+        }
+        currentWorkout = preset
+        return preset
     }
     
     // MARK: - Data Persistence (Enhanced with Core Data support)
@@ -261,5 +306,24 @@ class WorkoutDataManager: ObservableObject {
         if let data = try? JSONEncoder().encode(completedWorkouts) {
             UserDefaults.standard.set(data, forKey: completedWorkoutsKey + "_backup")
         }
+    }
+    
+    // MARK: - In Progress Workout Persistence
+    private func saveInProgressWorkout() {
+        guard let workout = inProgressWorkout else { return }
+        if let data = try? JSONEncoder().encode(workout) {
+            UserDefaults.standard.set(data, forKey: inProgressWorkoutKey)
+        }
+    }
+    
+    private func loadInProgressWorkout() {
+        if let data = UserDefaults.standard.data(forKey: inProgressWorkoutKey),
+           let workout = try? JSONDecoder().decode(InProgressWorkout.self, from: data) {
+            inProgressWorkout = workout
+        }
+    }
+    
+    private func clearInProgressWorkout() {
+        UserDefaults.standard.removeObject(forKey: inProgressWorkoutKey)
     }
 }

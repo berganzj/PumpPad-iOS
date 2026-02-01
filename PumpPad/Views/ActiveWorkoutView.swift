@@ -4,46 +4,120 @@ struct ActiveWorkoutView: View {
     let preset: WorkoutPreset
     @EnvironmentObject var dataManager: WorkoutDataManager
     @State private var workoutExercises: [Exercise]
+    @State private var workoutNotes: String
     @State private var showingCompleteAlert = false
     @State private var showingCancelAlert = false
+    @State private var showingSaveConfirmation = false
     @State private var startTime: Date
     
     init(preset: WorkoutPreset) {
         self.preset = preset
         self._workoutExercises = State(initialValue: preset.exercises)
+        self._workoutNotes = State(initialValue: "")
         self._startTime = State(initialValue: Date())
     }
     
     var body: some View {
-        List {
-            Section {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(preset.name)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text("Started: \(startTime, formatter: timeFormatter)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    if !preset.notes.isEmpty {
-                        Text(preset.notes)
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .padding(.vertical, 4)
-            }
+        ZStack {
+            // Gradient background
+            LinearGradient(
+                colors: [
+                    Color.blue.opacity(0.1),
+                    Color.purple.opacity(0.1),
+                    Color.pink.opacity(0.05)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
             
-            ForEach(workoutExercises.indices, id: \.self) { exerciseIndex in
-                Section("\(exerciseIndex + 1). \(workoutExercises[exerciseIndex].name)") {
-                    ForEach(workoutExercises[exerciseIndex].sets.indices, id: \.self) { setIndex in
-                        ActiveSetRowView(
-                            set: $workoutExercises[exerciseIndex].sets[setIndex],
-                            setNumber: setIndex + 1
-                        )
+            ScrollView {
+                VStack(spacing: 20) {
+                    GlassContainer(cornerRadius: 20, padding: 20) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(preset.name)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            
+                            Text("Started: \(startTime, formatter: timeFormatter)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            if !preset.notes.isEmpty {
+                                Text("Preset Notes: \(preset.notes)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    
+                    GlassContainer(cornerRadius: 20, padding: 20) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Workout Notes")
+                                .font(.headline)
+                            
+                            TextField("Add notes about this workout session...", text: $workoutNotes, axis: .vertical)
+                                .lineLimit(3...6)
+                                .glassTextField()
+                                .onChange(of: workoutNotes) { _, _ in
+                                    saveProgress()
+                                }
+                        }
+                    }
+            
+                    ForEach(workoutExercises.indices, id: \.self) { exerciseIndex in
+                        GlassContainer(cornerRadius: 16, padding: 16) {
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Text("\(exerciseIndex + 1). \(workoutExercises[exerciseIndex].name)")
+                                        .font(.headline)
+                                        .foregroundColor(workoutExercises[exerciseIndex].isSkipped ? .secondary : .primary)
+                                    
+                                    Spacer()
+                                    
+                                    if workoutExercises[exerciseIndex].isSkipped {
+                                        Text("SKIPPED")
+                                            .font(.caption)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.orange)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(Color.orange.opacity(0.2))
+                                            .cornerRadius(6)
+                                    }
+                                    
+                                    Button(action: {
+                                        toggleSkipExercise(at: exerciseIndex)
+                                    }) {
+                                        Image(systemName: workoutExercises[exerciseIndex].isSkipped ? "arrow.uturn.backward" : "xmark.circle")
+                                            .foregroundColor(workoutExercises[exerciseIndex].isSkipped ? .blue : .orange)
+                                    }
+                                }
+                                
+                                if !workoutExercises[exerciseIndex].isSkipped {
+                                    ForEach(workoutExercises[exerciseIndex].sets.indices, id: \.self) { setIndex in
+                                        ActiveSetRowView(
+                                            set: $workoutExercises[exerciseIndex].sets[setIndex],
+                                            setNumber: setIndex + 1
+                                        )
+                                        .onChange(of: workoutExercises[exerciseIndex].sets[setIndex].actualReps) { _, _ in
+                                            saveProgress()
+                                        }
+                                        .onChange(of: workoutExercises[exerciseIndex].sets[setIndex].weight) { _, _ in
+                                            saveProgress()
+                                        }
+                                    }
+                                } else {
+                                    Text("Exercise skipped - machine unavailable")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                        .italic()
+                                }
+                            }
+                        }
                     }
                 }
+                .padding()
             }
         }
         .navigationTitle("Active Workout")
@@ -58,11 +132,20 @@ struct ActiveWorkoutView: View {
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Complete") {
-                    showingCompleteAlert = true
+                HStack {
+                    Button(action: {
+                        saveProgress()
+                        showingSaveConfirmation = true
+                    }) {
+                        Image(systemName: "square.and.arrow.down")
+                    }
+                    .glassButton()
+                    
+                    Button("Complete") {
+                        showingCompleteAlert = true
+                    }
+                    .glassButton()
                 }
-                .foregroundColor(.blue)
-                .fontWeight(.semibold)
             }
         }
         .alert("Complete Workout?", isPresented: $showingCompleteAlert) {
@@ -81,6 +164,24 @@ struct ActiveWorkoutView: View {
         } message: {
             Text("Are you sure you want to cancel this workout? Your progress will be lost.")
         }
+        .alert("Progress Saved", isPresented: $showingSaveConfirmation) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Your workout progress has been saved. You can safely switch apps.")
+        }
+        .onAppear {
+            // Load from in-progress workout if available
+            if let inProgress = dataManager.inProgressWorkout,
+               inProgress.presetId == preset.id {
+                workoutExercises = inProgress.exercises
+                workoutNotes = inProgress.notes
+                startTime = inProgress.startTime
+            }
+            saveProgress() // Auto-save on appear
+        }
+        .onChange(of: workoutExercises) { _, _ in
+            saveProgress() // Auto-save when exercises change
+        }
     }
     
     private var timeFormatter: DateFormatter {
@@ -89,11 +190,21 @@ struct ActiveWorkoutView: View {
         return formatter
     }
     
+    private func saveProgress() {
+        dataManager.updateInProgressWorkout(exercises: workoutExercises, notes: workoutNotes)
+    }
+    
+    private func toggleSkipExercise(at index: Int) {
+        workoutExercises[index].isSkipped.toggle()
+        saveProgress()
+    }
+    
     private func completeWorkout() {
         let duration = Date().timeIntervalSince(startTime)
         let completedWorkout = CompletedWorkout(
             from: preset,
             exercises: workoutExercises,
+            notes: workoutNotes,
             duration: duration
         )
         dataManager.completeWorkout(completedWorkout)

@@ -42,9 +42,14 @@ struct CompletedWorkoutDetailView: View {
                     }
                     
                     if !workout.notes.isEmpty {
-                        Text(workout.notes)
-                            .font(.body)
-                            .foregroundColor(.secondary)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Workout Notes:")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text(workout.notes)
+                                .font(.body)
+                                .foregroundColor(.primary)
+                        }
                     }
                 }
                 .padding(.vertical, 8)
@@ -74,10 +79,31 @@ struct CompletedExerciseRowView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(exerciseNumber). \(exercise.name)")
-                .font(.headline)
+            HStack {
+                Text("\(exerciseNumber). \(exercise.name)")
+                    .font(.headline)
+                    .foregroundColor(exercise.isSkipped ? .secondary : .primary)
+                
+                if exercise.isSkipped {
+                    Spacer()
+                    Text("SKIPPED")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.orange)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.orange.opacity(0.2))
+                        .cornerRadius(6)
+                }
+            }
             
-            ForEach(exercise.sets.indices, id: \.self) { setIndex in
+            if exercise.isSkipped {
+                Text("Exercise was skipped - machine unavailable")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .italic()
+            } else {
+                ForEach(exercise.sets.indices, id: \.self) { setIndex in
                 HStack {
                     Text("Set \(setIndex + 1):")
                         .font(.caption)
@@ -112,6 +138,7 @@ struct CompletedExerciseRowView: View {
                     }
                 }
             }
+            }
         }
         .padding(.vertical, 4)
     }
@@ -121,19 +148,23 @@ struct WorkoutSummaryView: View {
     let workout: CompletedWorkout
     
     private var completedSets: Int {
-        workout.exercises.flatMap { $0.sets }.count { $0.actualReps != nil }
+        workout.exercises.filter { !$0.isSkipped }.flatMap { $0.sets }.count { $0.actualReps != nil }
     }
     
     private var totalSets: Int {
-        workout.exercises.flatMap { $0.sets }.count
+        workout.exercises.filter { !$0.isSkipped }.flatMap { $0.sets }.count
+    }
+    
+    private var skippedExercises: Int {
+        workout.exercises.filter { $0.isSkipped }.count
     }
     
     private var totalReps: Int {
-        workout.exercises.flatMap { $0.sets }.compactMap { $0.actualReps }.reduce(0, +)
+        workout.exercises.filter { !$0.isSkipped }.flatMap { $0.sets }.compactMap { $0.actualReps }.reduce(0, +)
     }
     
     private var totalWeight: Double {
-        workout.exercises.flatMap { $0.sets }.compactMap { set in
+        workout.exercises.filter { !$0.isSkipped }.flatMap { $0.sets }.compactMap { set in
             guard let reps = set.actualReps, let weight = set.weight else { return nil }
             return Double(reps) * weight
         }.reduce(0, +)
@@ -180,6 +211,12 @@ struct WorkoutSummaryView: View {
             Text("\(completedSets) of \(totalSets) sets completed")
                 .font(.caption)
                 .foregroundColor(.secondary)
+            
+            if skippedExercises > 0 {
+                Text("\(skippedExercises) exercise\(skippedExercises == 1 ? "" : "s") skipped")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+            }
         }
         .padding(.vertical, 8)
     }
@@ -195,6 +232,7 @@ struct WorkoutSummaryView: View {
                     WorkoutSet(targetReps: "10", actualReps: 8, weight: 135)
                 ])
             ],
+            notes: "Felt strong today",
             duration: 3600
         ))
     }
