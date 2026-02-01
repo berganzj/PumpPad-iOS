@@ -72,20 +72,20 @@ struct GlassButton: ViewModifier {
     
     @ViewBuilder
     private var backgroundShape: some View {
-        RoundedRectangle(cornerRadius: 12)
-            .fill(isEnabled ? .ultraThinMaterial : Color.gray.opacity(0.3))
-            .overlay {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(
-                        LinearGradient(
-                            colors: gradientColors,
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+        if isEnabled {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(
+                            LinearGradient(
+                                colors: gradientColors,
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    )
-            }
-            .overlay {
-                if isEnabled {
+                }
+                .overlay {
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(
                             LinearGradient(
@@ -99,9 +99,22 @@ struct GlassButton: ViewModifier {
                             lineWidth: 1
                         )
                 }
-            }
-            .shadow(color: isEnabled ? Color.blue.opacity(0.4) : Color.clear, radius: 12, x: 0, y: 6)
-            .shadow(color: isEnabled ? Color.purple.opacity(0.2) : Color.clear, radius: 8, x: 0, y: 3)
+                .shadow(color: Color.blue.opacity(0.4), radius: 12, x: 0, y: 6)
+                .shadow(color: Color.purple.opacity(0.2), radius: 8, x: 0, y: 3)
+        } else {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.gray.opacity(0.3))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(
+                            LinearGradient(
+                                colors: gradientColors,
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+        }
     }
     
     func body(content: Content) -> some View {
