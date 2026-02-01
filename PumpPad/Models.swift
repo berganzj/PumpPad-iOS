@@ -215,13 +215,33 @@ class WorkoutDataManager: ObservableObject {
     }
     
     // MARK: - Data Persistence (Enhanced with Core Data support)
+    // File-based storage URLs in Documents directory
+    private var presetsFileURL: URL {
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return documentsPath.appendingPathComponent("workout_presets.json")
+    }
+    
+    private var completedWorkoutsFileURL: URL {
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return documentsPath.appendingPathComponent("completed_workouts.json")
+    }
+    
     private func savePresets() {
-        // Try Core Data first, fall back to UserDefaults
-        if coreDataManager != nil {
-            // Save to Core Data
-            savePresetsToCoreData()
-        } else {
-            // Fall back to UserDefaults
+        // Save to Documents directory (primary storage - persists across updates)
+        do {
+            let data = try JSONEncoder().encode(presets)
+            try data.write(to: presetsFileURL, options: [.atomicWrite, .completeFileProtection])
+            
+            // Also save to UserDefaults as backup
+            UserDefaults.standard.set(data, forKey: presetsKey)
+            
+            // Try Core Data if available
+            if coreDataManager != nil {
+                savePresetsToCoreData()
+            }
+        } catch {
+            print("Failed to save presets: \(error)")
+            // Fallback to UserDefaults
             if let data = try? JSONEncoder().encode(presets) {
                 UserDefaults.standard.set(data, forKey: presetsKey)
             }
@@ -229,12 +249,21 @@ class WorkoutDataManager: ObservableObject {
     }
     
     private func saveCompletedWorkouts() {
-        // Try Core Data first, fall back to UserDefaults
-        if coreDataManager != nil {
-            // Save to Core Data
-            saveCompletedWorkoutsToCoreData()
-        } else {
-            // Fall back to UserDefaults
+        // Save to Documents directory (primary storage - persists across updates)
+        do {
+            let data = try JSONEncoder().encode(completedWorkouts)
+            try data.write(to: completedWorkoutsFileURL, options: [.atomicWrite, .completeFileProtection])
+            
+            // Also save to UserDefaults as backup
+            UserDefaults.standard.set(data, forKey: completedWorkoutsKey)
+            
+            // Try Core Data if available
+            if coreDataManager != nil {
+                saveCompletedWorkoutsToCoreData()
+            }
+        } catch {
+            print("Failed to save completed workouts: \(error)")
+            // Fallback to UserDefaults
             if let data = try? JSONEncoder().encode(completedWorkouts) {
                 UserDefaults.standard.set(data, forKey: completedWorkoutsKey)
             }
@@ -255,16 +284,28 @@ class WorkoutDataManager: ObservableObject {
     }
     
     private func loadDataFromUserDefaults() {
-        // Load presets
-        if let data = UserDefaults.standard.data(forKey: presetsKey),
+        // Load presets from Documents directory first (primary storage)
+        if FileManager.default.fileExists(atPath: presetsFileURL.path),
+           let data = try? Data(contentsOf: presetsFileURL),
            let presets = try? JSONDecoder().decode([WorkoutPreset].self, from: data) {
             self.presets = presets
+        } else if let data = UserDefaults.standard.data(forKey: presetsKey),
+                  let presets = try? JSONDecoder().decode([WorkoutPreset].self, from: data) {
+            // Fallback to UserDefaults and migrate
+            self.presets = presets
+            savePresets() // Migrate to file-based storage
         }
         
-        // Load completed workouts
-        if let data = UserDefaults.standard.data(forKey: completedWorkoutsKey),
+        // Load completed workouts from Documents directory first
+        if FileManager.default.fileExists(atPath: completedWorkoutsFileURL.path),
+           let data = try? Data(contentsOf: completedWorkoutsFileURL),
            let completedWorkouts = try? JSONDecoder().decode([CompletedWorkout].self, from: data) {
             self.completedWorkouts = completedWorkouts
+        } else if let data = UserDefaults.standard.data(forKey: completedWorkoutsKey),
+                  let completedWorkouts = try? JSONDecoder().decode([CompletedWorkout].self, from: data) {
+            // Fallback to UserDefaults and migrate
+            self.completedWorkouts = completedWorkouts
+            saveCompletedWorkouts() // Migrate to file-based storage
         }
     }
     
@@ -309,21 +350,121 @@ class WorkoutDataManager: ObservableObject {
     }
     
     // MARK: - In Progress Workout Persistence
+    // File-based storage in Documents directory (persists across app updates)
+    private var inProgressWorkoutFileURL: URL {
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return documentsPath.appendingPathComponent("in_progress_workout.json")
+    }
+    
     private func saveInProgressWorkout() {
-        guard let workout = inProgressWorkout else { return }
-        if let data = try? JSONEncoder().encode(workout) {
+        guard let workout = inProgressWorkout else {
+            // Clear file if no workout in progress
+            try? FileManager.default.removeItem(at: inProgressWorkoutFileURL)
+            return
+        }
+        
+        do {
+            let data = try JSONEncoder().encode(workout)
+            try data.write(to: inProgressWorkoutFileURL, options: [.atomicWrite, .completeFileProtection])
+            
+            // Also keep UserDefaults as backup
             UserDefaults.standard.set(data, forKey: inProgressWorkoutKey)
+        } catch {
+            print("Failed to save in-progress workout: \(error)")
+            // Fallback to UserDefaults
+            if let data = try? JSONEncoder().encode(workout) {
+                UserDefaults.standard.set(data, forKey: inProgressWorkoutKey)
+            }
         }
     }
     
     private func loadInProgressWorkout() {
+        // Try loading from Documents directory first
+        if FileManager.default.fileExists(atPath: inProgressWorkoutFileURL.path),
+           let data = try? Data(contentsOf: inProgressWorkoutFileURL),
+           let workout = try? JSONDecoder().decode(InProgressWorkout.self, from: data) {
+            inProgressWorkout = workout
+            return
+        }
+        
+        // Fallback to UserDefaults (for migration)
         if let data = UserDefaults.standard.data(forKey: inProgressWorkoutKey),
            let workout = try? JSONDecoder().decode(InProgressWorkout.self, from: data) {
             inProgressWorkout = workout
+            // Migrate to file-based storage
+            saveInProgressWorkout()
         }
     }
     
     private func clearInProgressWorkout() {
+        // Remove file
+        try? FileManager.default.removeItem(at: inProgressWorkoutFileURL)
+        // Also clear UserDefaults
         UserDefaults.standard.removeObject(forKey: inProgressWorkoutKey)
     }
+    
+    // MARK: - Backup and Restore
+    func createBackup() throws -> URL {
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let backupDirectory = documentsPath.appendingPathComponent("Backups")
+        try FileManager.default.createDirectory(at: backupDirectory, withIntermediateDirectories: true)
+        
+        let timestamp = ISO8601DateFormatter().string(from: Date())
+        let backupFolder = backupDirectory.appendingPathComponent("backup_\(timestamp)")
+        try FileManager.default.createDirectory(at: backupFolder, withIntermediateDirectories: true)
+        
+        // Backup presets
+        if let presetsData = try? JSONEncoder().encode(presets) {
+            try presetsData.write(to: backupFolder.appendingPathComponent("presets.json"))
+        }
+        
+        // Backup completed workouts
+        if let workoutsData = try? JSONEncoder().encode(completedWorkouts) {
+            try workoutsData.write(to: backupFolder.appendingPathComponent("completed_workouts.json"))
+        }
+        
+        // Backup in-progress workout if exists
+        if FileManager.default.fileExists(atPath: inProgressWorkoutFileURL.path) {
+            try FileManager.default.copyItem(at: inProgressWorkoutFileURL, to: backupFolder.appendingPathComponent("in_progress_workout.json"))
+        }
+        
+        // Create metadata
+        let metadata: [String: Any] = [
+            "version": "1.0",
+            "timestamp": timestamp,
+            "app_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+        ]
+        let metadataData = try JSONSerialization.data(withJSONObject: metadata, options: .prettyPrinted)
+        try metadataData.write(to: backupFolder.appendingPathComponent("backup_info.json"))
+        
+        return backupFolder
+    }
+    
+    func restoreBackup(from backupFolder: URL) throws {
+        // Restore presets
+        let presetsFile = backupFolder.appendingPathComponent("presets.json")
+        if FileManager.default.fileExists(atPath: presetsFile.path),
+           let data = try? Data(contentsOf: presetsFile),
+           let restoredPresets = try? JSONDecoder().decode([WorkoutPreset].self, from: data) {
+            presets = restoredPresets
+            savePresets()
+        }
+        
+        // Restore completed workouts
+        let workoutsFile = backupFolder.appendingPathComponent("completed_workouts.json")
+        if FileManager.default.fileExists(atPath: workoutsFile.path),
+           let data = try? Data(contentsOf: workoutsFile),
+           let restoredWorkouts = try? JSONDecoder().decode([CompletedWorkout].self, from: data) {
+            completedWorkouts = restoredWorkouts
+            saveCompletedWorkouts()
+        }
+        
+        // Restore in-progress workout
+        let inProgressFile = backupFolder.appendingPathComponent("in_progress_workout.json")
+        if FileManager.default.fileExists(atPath: inProgressFile.path) {
+            try FileManager.default.copyItem(at: inProgressFile, to: inProgressWorkoutFileURL)
+            loadInProgressWorkout()
+        }
+    }
+}
 }
