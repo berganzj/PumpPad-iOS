@@ -6,50 +6,69 @@ struct PresetDetailView: View {
     @State private var showingEditView = false
     
     var body: some View {
-        List {
-            Section {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(preset.name)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    if !preset.notes.isEmpty {
-                        Text(preset.notes)
-                            .font(.body)
+        ZStack {
+            // Gradient background
+            LinearGradient(
+                colors: [
+                    Color.blue.opacity(0.1),
+                    Color.purple.opacity(0.1),
+                    Color.pink.opacity(0.05)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
+            ScrollView {
+                VStack(spacing: 20) {
+                    GlassContainer(cornerRadius: 20, padding: 20) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(preset.name)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            
+                            if !preset.notes.isEmpty {
+                                Text(preset.notes)
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            HStack {
+                                Label("\(preset.exercises.count) exercises", systemImage: "list.bullet")
+                                Spacer()
+                                Label("Created \(preset.dateCreated, formatter: dateFormatter)", systemImage: "calendar")
+                            }
+                            .font(.caption)
                             .foregroundColor(.secondary)
+                        }
                     }
                     
-                    HStack {
-                        Label("\(preset.exercises.count) exercises", systemImage: "list.bullet")
-                        Spacer()
-                        Label("Created \(preset.dateCreated, formatter: dateFormatter)", systemImage: "calendar")
+                    GlassContainer(cornerRadius: 20, padding: 20) {
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Exercises")
+                                .font(.headline)
+                            
+                            if preset.exercises.isEmpty {
+                                Text("No exercises added yet")
+                                    .foregroundColor(.secondary)
+                                    .italic()
+                            } else {
+                                ForEach(preset.exercises.indices, id: \.self) { index in
+                                    ExerciseDetailRowView(exercise: preset.exercises[index], exerciseNumber: index + 1)
+                                }
+                            }
+                        }
                     }
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                }
-                .padding(.vertical, 8)
-            }
-            
-            Section("Exercises") {
-                if preset.exercises.isEmpty {
-                    Text("No exercises added yet")
-                        .foregroundColor(.secondary)
-                        .italic()
-                } else {
-                    ForEach(preset.exercises.indices, id: \.self) { index in
-                        ExerciseDetailRowView(exercise: preset.exercises[index], exerciseNumber: index + 1)
+                    
+                    Button(action: { dataManager.startWorkout(preset: preset) }) {
+                        HStack {
+                            Image(systemName: "play.circle.fill")
+                            Text("Start This Workout")
+                        }
                     }
+                    .glassButton()
                 }
-            }
-            
-            Section {
-                Button(action: { dataManager.startWorkout(preset: preset) }) {
-                    HStack {
-                        Image(systemName: "play.circle.fill")
-                        Text("Start This Workout")
-                    }
-                    .foregroundColor(.blue)
-                }
+                .padding()
             }
         }
         .navigationTitle("Preset Details")
@@ -59,6 +78,7 @@ struct PresetDetailView: View {
                 Button("Edit") {
                     showingEditView = true
                 }
+                .glassButton()
             }
         }
         .sheet(isPresented: $showingEditView) {

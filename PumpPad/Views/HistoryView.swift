@@ -9,30 +9,51 @@ struct HistoryView: View {
     
     var body: some View {
         NavigationView {
-            List {
-                if sortedWorkouts.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "clock.arrow.circlepath")
-                            .font(.system(size: 50))
-                            .foregroundColor(.gray)
-                        
-                        Text("No Workout History")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                        
-                        Text("Complete workouts to see them here")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 40)
-                } else {
-                    ForEach(sortedWorkouts) { workout in
-                        NavigationLink(destination: CompletedWorkoutDetailView(workout: workout)) {
-                            WorkoutHistoryRowView(workout: workout)
+            ZStack {
+                // Gradient background
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.1),
+                        Color.purple.opacity(0.1),
+                        Color.pink.opacity(0.05)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 12) {
+                        if sortedWorkouts.isEmpty {
+                            GlassContainer(cornerRadius: 20, padding: 24) {
+                                VStack(spacing: 16) {
+                                    Image(systemName: "clock.arrow.circlepath")
+                                        .font(.system(size: 50))
+                                        .foregroundColor(.gray)
+                                    
+                                    Text("No Workout History")
+                                        .font(.headline)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text("Complete workouts to see them here")
+                                        .font(.body)
+                                        .foregroundColor(.secondary)
+                                        .multilineTextAlignment(.center)
+                                }
+                            }
+                            .padding(.vertical, 40)
+                        } else {
+                            ForEach(sortedWorkouts) { workout in
+                                NavigationLink(destination: CompletedWorkoutDetailView(workout: workout)) {
+                                    GlassContainer(cornerRadius: 16, padding: 16) {
+                                        WorkoutHistoryRowView(workout: workout)
+                                    }
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
                         }
                     }
+                    .padding()
                 }
             }
             .navigationTitle("Workout History")

@@ -22,57 +22,76 @@ struct WorkoutSelectionView: View {
     @EnvironmentObject var dataManager: WorkoutDataManager
     
     var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "dumbbell.fill")
-                .font(.system(size: 60))
-                .foregroundColor(.blue)
+        ZStack {
+            // Gradient background
+            LinearGradient(
+                colors: [
+                    Color.blue.opacity(0.1),
+                    Color.purple.opacity(0.1),
+                    Color.pink.opacity(0.05)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
             
-            Text("Select a Preset to Start")
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text("Choose from your workout presets to begin a new session")
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-            
-            if !dataManager.presets.isEmpty {
-                LazyVStack(spacing: 12) {
-                    ForEach(dataManager.presets) { preset in
-                        Button(action: { dataManager.startWorkout(preset: preset) }) {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(preset.name)
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                    Text("\(preset.exercises.count) exercises")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+            ScrollView {
+                VStack(spacing: 20) {
+                    Image(systemName: "dumbbell.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.blue)
+                    
+                    Text("Select a Preset to Start")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                    
+                    Text("Choose from your workout presets to begin a new session")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    
+                    if !dataManager.presets.isEmpty {
+                        VStack(spacing: 12) {
+                            ForEach(dataManager.presets) { preset in
+                                Button(action: { dataManager.startWorkout(preset: preset) }) {
+                                    GlassContainer(cornerRadius: 16, padding: 16) {
+                                        HStack {
+                                            VStack(alignment: .leading) {
+                                                Text(preset.name)
+                                                    .font(.headline)
+                                                    .foregroundColor(.primary)
+                                                Text("\(preset.exercises.count) exercises")
+                                                    .font(.caption)
+                                                    .foregroundColor(.secondary)
+                                            }
+                                            Spacer()
+                                            Image(systemName: "play.circle.fill")
+                                                .font(.title2)
+                                                .foregroundColor(.blue)
+                                        }
+                                    }
                                 }
-                                Spacer()
-                                Image(systemName: "play.circle.fill")
-                                    .font(.title2)
-                                    .foregroundColor(.blue)
+                                .buttonStyle(PlainButtonStyle())
                             }
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(12)
                         }
-                        .buttonStyle(PlainButtonStyle())
+                        .padding(.horizontal)
+                    } else {
+                        GlassContainer(cornerRadius: 20, padding: 24) {
+                            VStack(spacing: 8) {
+                                Text("No presets available")
+                                    .font(.headline)
+                                Text("Create one in the Presets tab")
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding()
                     }
                 }
-                .padding(.horizontal)
-            } else {
-                Text("No presets available. Create one in the Presets tab.")
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .padding()
+                .padding()
             }
-            
-            Spacer()
         }
-        .padding()
     }
 }
 

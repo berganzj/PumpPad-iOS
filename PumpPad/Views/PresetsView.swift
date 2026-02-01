@@ -6,13 +6,32 @@ struct PresetsView: View {
     
     var body: some View {
         NavigationView {
-            List {
-                ForEach(dataManager.presets) { preset in
-                    NavigationLink(destination: PresetDetailView(preset: preset)) {
-                        PresetRowView(preset: preset)
+            ZStack {
+                // Gradient background
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.1),
+                        Color.purple.opacity(0.1),
+                        Color.pink.opacity(0.05)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 12) {
+                        ForEach(dataManager.presets) { preset in
+                            NavigationLink(destination: PresetDetailView(preset: preset)) {
+                                GlassContainer(cornerRadius: 16, padding: 16) {
+                                    PresetRowView(preset: preset)
+                                }
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
                     }
+                    .padding()
                 }
-                .onDelete(perform: deletePresets)
             }
             .navigationTitle("Workout Presets")
             .navigationBarTitleDisplayMode(.large)
@@ -21,6 +40,7 @@ struct PresetsView: View {
                     Button(action: { showingAddPreset = true }) {
                         Image(systemName: "plus")
                     }
+                    .glassButton()
                 }
             }
             .sheet(isPresented: $showingAddPreset) {
