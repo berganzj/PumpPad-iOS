@@ -467,4 +467,3 @@ class WorkoutDataManager: ObservableObject {
         }
     }
 }
-}
